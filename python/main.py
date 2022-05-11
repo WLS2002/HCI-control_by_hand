@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import numpy as np
 from mediapipe import solutions
@@ -45,7 +47,12 @@ class Processor(object):
 class Communicator(object):
     def __init__(self):
         self.socket = socket(AF_INET, SOCK_STREAM)
-        self.socket.connect(("127.0.0.1", 1234))
+        while True:
+            try:
+                self.socket.connect(("127.0.0.1", 1234))
+                break
+            except ConnectionRefusedError:
+                time.sleep(1)  # spin
 
     def send(self, message: str):
         self.socket.send(message.encode())
@@ -72,10 +79,13 @@ def main():
     res = "begin"
     communicator.send(res)
 
-    while True:
-        img = communicator.receive_img(width, height)
-        res = processor.image_process(img)
-        communicator.send(res)
+    try:
+        while True:
+            img = communicator.receive_img(width, height)
+            res = processor.image_process(img)
+            communicator.send(res)
+    except ConnectionResetError:
+        pass
 
     communicator.close()
 

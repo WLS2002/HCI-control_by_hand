@@ -1,9 +1,8 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio/videoio_c.h>
-#include "communication.h"
-#include <pthread.h>
-#include "../third_party/json.hpp"
-#include "utils.h"
+#include <communication.h>
+#include <json.hpp>
+#include <utils.h>
 
 using namespace cv;
 using namespace std;

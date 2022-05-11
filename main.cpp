@@ -51,9 +51,9 @@ std::pair<double, double> handle_points(char* res){
 
     double x, y;
 
-    if(!j[0][0].is_null()){
-        x = j[0][0][0];
-        y = j[0][0][1];
+    if(!j[0][9].is_null()){
+        x = j[0][9][0];
+        y = j[0][9][1];
     } else {
         x = -1;
         y = -1;
@@ -63,13 +63,20 @@ std::pair<double, double> handle_points(char* res){
 }
 
 int main(){
+
+    const char* interpreter = "C:\\ProgramData\\Anaconda3\\envs\\mediapipe\\python.exe";
+
     cout << "try to open camera..." << endl;
     auto* cam = new camera(0);
     cout << "[successful] connect to camera" << endl;
     cout << "[successful] width: " << cam->width << ", height: " << cam->height << ", total length: " << cam->length << endl;
 
+    cout << "try to start python process..." << endl;
+    thread python = start_python_thread(interpreter);
+
     cout << "waiting python client connect..." << endl;
     auto* com = new communication();
+
     cout << "[successful] connect to python client" << endl;
     auto* ht = new hand_tracker(cam, com);
 
