@@ -5,7 +5,7 @@ struct communication{
 
     SOCKET serSocket;
     SOCKET clientSocket;
-    const int BUF_SIZE = 3000;
+    const int BUF_SIZE = 6000;
     char* receive_buffer;
 
     communication(){

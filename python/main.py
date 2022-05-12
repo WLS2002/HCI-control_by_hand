@@ -36,7 +36,7 @@ class Processor(object):
     def __init__(self):
         self.hands = solutions.hands.Hands(static_image_mode=False,
                                            max_num_hands=2,
-                                           min_detection_confidence=0.5)
+                                           min_detection_confidence=0.8)
 
     def image_process(self, img):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)

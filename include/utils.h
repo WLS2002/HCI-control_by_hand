@@ -6,6 +6,6 @@
 
 #define int_to_char(ch, a) sprintf(ch,"%d",a);
 
-long get_ms();
+int64_t get_ms();
 
-std::thread start_python_thread(const char* interpreter);
+void start_python(const char* interpreter);

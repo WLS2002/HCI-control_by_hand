@@ -53,4 +53,14 @@ struct hand_tracker{
         com->send_int(cam->height);
     }
 
+    void show_window(Mat img, json result, long delay_start, long delay_end, long last_time){
+        string text = format("delay: %ld, fps: %ld", delay_end - delay_start, 1000 / (delay_end - last_time));
+        putText(img, text, Point(0,50), 2, 1, cv::FONT_HERSHEY_COMPLEX, 2, 8, 0);
+
+        if(!result[0].is_null()){
+            circle( img,Point ((int)(double(result[0][0][0]) * cam->width), (int)(double(result[0][0][1]) * cam->height)),2,Scalar( 0, 0, 255 ),FILLED,LINE_8 );
+        }
+        imshow("", img);
+    }
+
 };

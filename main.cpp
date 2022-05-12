@@ -3,68 +3,69 @@
 
 std::pair<double, double> handle_points(char*);
 
-void* process_image(void*);
+void process_image(void*, void*);
 
-void* process_image(void* args0, void* args1){
-    auto* ht = (hand_tracker*) args0;
-    auto* hc = (HostController*) args1;
+void process_image(void* arg0, void* arg1){
 
-    ht->com->receive();
-    long last_time = get_ms();
+    auto* ht = (hand_tracker*) arg0;
+    auto* hc = (HostController*) arg1;
+
+    ht->com->receive();  // wait for python process connect
+    long last_time=-1;
+    long delay_start, delay_end;
 
     cout << "[successful] start sending image" << endl;
-    while(1){
-        string text = "";
+
+    thread controller = thread(change_cursor_pos, hc);
+
+    while(true){
+
         Mat img;
         *ht->cam->cap >> img;
-        long delay_dic = get_ms();
+
+        delay_start = get_ms();
+
         flip(img, img, 1);
 
-        ht->com->send_img(img, ht->cam->length);
-        ht->com->receive();
+        ht->com->send_img(img, ht->cam->length);  //send img to python
+        ht->com->receive();   // receive hand location information
 
-        std::pair<double, double> p = handle_points(ht->com->receive_buffer);
-        double x = p.first, y = p.second;
+        auto j = json::parse(ht->com->receive_buffer);
 
-        hc->set_cursor_pos(x * hc->screen_width, y * hc->screen_height);
+        hc->step(j, get_ms());
 
-        text.append("DELAY: ").append(std::to_string(get_ms() - delay_dic)).append(" ");
+        delay_end = get_ms();
 
-        long new_time = get_ms();
+        ht->show_window(img, j, delay_start, delay_end, last_time);
 
-        text.append("FPS: ").append(std::to_string(1000 /(new_time - last_time)));
-        last_time = new_time;
+        last_time = delay_end;
 
-
-        circle( img,Point ((int)(x * ht->cam->width), (int)(y * ht->cam->height)),5,Scalar( 0, 0, 255 ),FILLED,LINE_8 );
-        putText(img, text, Point(0,50), 2, 1, cv::FONT_HERSHEY_COMPLEX, 2, 8, 0);
-        imshow("", img);
         char c = waitKey(1);
-        if(c == 27){
+        if(c == 27){ //esc
             break;
         }
     }
 }
 
-std::pair<double, double> handle_points(char* res){
-    json j = json::parse(res);
-
-    double x, y;
-
-    if(!j[0][9].is_null()){
-        x = j[0][9][0];
-        y = j[0][9][1];
-    } else {
-        x = -1;
-        y = -1;
-    }
-    return std::pair<double, double>(x, y);
-
-}
+//std::pair<double, double> handle_points(char* res){
+//    json j = json::parse(res);
+//
+//    double x, y;
+//
+//    if(!j[0][9].is_null()){
+//        x = j[0][9][0];
+//        y = j[0][9][1];
+//    } else {
+//        x = -1;
+//        y = -1;
+//    }
+//    return std::pair<double, double>(x, y);
+//
+//}
 
 int main(){
 
-    const char* interpreter = "C:\\ProgramData\\Anaconda3\\envs\\mediapipe\\python.exe";
+    const char* interpreter = R"(C:\Users\cvgcv\anaconda3\envs\mediapipe\python.exe)";
 
     cout << "try to open camera..." << endl;
     auto* cam = new camera(0);
@@ -72,17 +73,18 @@ int main(){
     cout << "[successful] width: " << cam->width << ", height: " << cam->height << ", total length: " << cam->length << endl;
 
     cout << "try to start python process..." << endl;
-    thread python = start_python_thread(interpreter);
+    thread python = thread(start_python, interpreter);
 
     cout << "waiting python client connect..." << endl;
     auto* com = new communication();
 
     cout << "[successful] connect to python client" << endl;
-    auto* ht = new hand_tracker(cam, com);
+    auto ht = new hand_tracker(cam, com);
 
     cout << "try to initialize host controller..." << endl;
-    auto* hc = new HostController();
+    auto hc = new HostController();
     cout << "[successful] host controller has been initialized" << endl;
 
-    process_image(ht, hc);
+    thread capture_and_process = thread(process_image, ht, hc);
+    capture_and_process.join();
 }
