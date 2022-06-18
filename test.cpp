@@ -39,19 +39,18 @@ void drawCir(Mat image, double x, double y, double size){
 int main() {
 
     srand(get_ms());
+//    for(int i = 0; i < 100; i++){
+//        int* order = random_order(i);
+//        for(int j = 0; j < i; j++) cout << order[j] << " ";
+//        cout << endl;
+//    }
+
     //Mat image1 = imread("../test.jpg", 1);//路径根据自己的改
     Mat image1(480, 640, CV_8UC3, Scalar(0, 0, 0));
 
-//    vector<Point2f> points1;
-//    points1.push_back(Point2f(2, 3));
-
-//    for(int i = 0; i < points1.size(); i++){
-//        circle(image1, points1[i], 3, Scalar(0, 255, 120), -1);//画点，其实就是实心圆
-//    }
-
 
     vector<double *> points;
-    for (int i = 0; i <= 300; i++) {
+    for (int i = 0; i <= 30; i++) {
         double *tmp = new double[2];
         tmp[0] = r() * 640;
         tmp[1] = r() * 480;
@@ -62,13 +61,14 @@ int main() {
         circle(image1, Point(point[0], point[1]), 3, Scalar(0, 255, 120), -1);//画点，其实就是实心圆
     }
 
-    CSO_CIR cso(points);
+    CSO_REC cso(points);
     cso.search();
     cout << cso.bestFitness << endl;
     double* weight = cso.globalBest;
-    drawCir(image1, weight[0], weight[1], weight[2]);
-    cout << weight[0] << " " << weight[1] << " " << weight[2] << endl;
-    cout << circle_error(points, weight[0], weight[1], weight[2]) << endl;
+    drawRec(image1, weight[0], weight[1], weight[2], weight[3]);
+    cout << weight[0] << " " << weight[1] << " " << weight[2] << " " << weight[3] << endl;
+
+    cout << rectangle_error(points, weight[0], weight[1], weight[2], weight[3]) << endl;
     imshow("PointsinImage", image1);
     waitKey(0);//敲键盘关图片，别直接×
     return 0;

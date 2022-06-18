@@ -21,6 +21,9 @@ public:
 
     long long last_time = 0;
 
+    double* history_weight;
+    int history_type = -1;
+
     HostController(HandTracker *ht) {
         this->handTracker = ht;
         cursor_pos = new POINT;
@@ -95,14 +98,17 @@ public:
         cout << "cir: " << csoCir.bestFitness << endl;
 
         if(triBest > recBest && triBest > cirBest){
-            double* weight = csoTri.globalBest;
-            drawTri(img, weight[0], weight[1], weight[2], weight[3], weight[4], weight[5]);
+            history_weight = csoTri.globalBest;
+            history_type = 0;
+
         } else if (recBest > triBest && recBest > cirBest){
-            double* weight = csoRec.globalBest;
-            drawRec(img, weight[0], weight[1], weight[2], weight[3]);
+            history_weight = csoRec.globalBest;
+            history_type = 1;
+
         } else{
-            double* weight = csoCir.globalBest;
-            drawCir(img, weight[0], weight[1], weight[2]);
+            history_weight = csoCir.globalBest;
+            history_type = 2;
+
         }
     }
 
@@ -127,52 +133,18 @@ public:
 
             if(drawing_mode) {
                 trigger_drawing(img);
-
                 drawing_mode = false;
-                handTracker->show_window(img, result, drawingPoints, fps);
-                waitKey();
-                drawingPoints.clear();
             }
         }
         else {
             int left_click_count = get_left_click_count(result), right_click_count = get_right_click_count(
                     result), drawing_count = check_drawing_mode(result);
 
-            if (left_click_count >= 8) { // must be clicking
-                if (!left_down) {
-                    mouse_event(MOUSEEVENTF_LEFTDOWN, cursor_pos->x, cursor_pos->y, 0, 0);
-                    left_down = true;
-                }
-            }
-            else if (4 <= left_click_count && left_click_count <= 7) {
-                // transition state, doing nothing at all
-            }
-            else {
-                if (left_down) {
-                    mouse_event(MOUSEEVENTF_LEFTUP, cursor_pos->x, cursor_pos->y, 0, 0);
-                    left_down = false;
-                }
-            }
-
-            if (right_click_count >= 8) { // must be clicking
-                if (!right_down) {
-                    mouse_event(MOUSEEVENTF_RIGHTDOWN, cursor_pos->x, cursor_pos->y, 0, 0);
-                    right_down = true;
-                }
-            }
-            else if (4 <= right_click_count && right_click_count <= 7) {
-                // transition state, doing nothing at all
-            }
-            else {
-                if (right_down) {
-                    mouse_event(MOUSEEVENTF_RIGHTUP, cursor_pos->x, cursor_pos->y, 0, 0);
-                    right_down = false;
-                }
-            }
-
             if (drawing_count >= 2) {
                 if (!drawing_mode) {
                     drawing_mode = true;
+                    drawingPoints.clear();
+                    history_type = -1;
                 }
             }
             else if (1 <= drawing_count && drawing_count <= 1) {
@@ -181,13 +153,44 @@ public:
             else {
                 if (drawing_mode) {
                     trigger_drawing(img);
-
                     drawing_mode = false;
-                    handTracker->show_window(img, result, drawingPoints, fps);
-                    waitKey();
-                    drawingPoints.clear();
                 }
             }
+
+            if(!drawing_mode){
+                if (left_click_count >= 8) { // must be clicking
+                    if (!left_down) {
+                        mouse_event(MOUSEEVENTF_LEFTDOWN, cursor_pos->x, cursor_pos->y, 0, 0);
+                        left_down = true;
+                    }
+                }
+                else if (4 <= left_click_count && left_click_count <= 7) {
+                    // transition state, doing nothing at all
+                }
+                else {
+                    if (left_down) {
+                        mouse_event(MOUSEEVENTF_LEFTUP, cursor_pos->x, cursor_pos->y, 0, 0);
+                        left_down = false;
+                    }
+                }
+
+                if (right_click_count >= 8) { // must be clicking
+                    if (!right_down) {
+                        mouse_event(MOUSEEVENTF_RIGHTDOWN, cursor_pos->x, cursor_pos->y, 0, 0);
+                        right_down = true;
+                    }
+                }
+                else if (4 <= right_click_count && right_click_count <= 7) {
+                    // transition state, doing nothing at all
+                }
+                else {
+                    if (right_down) {
+                        mouse_event(MOUSEEVENTF_RIGHTUP, cursor_pos->x, cursor_pos->y, 0, 0);
+                        right_down = false;
+                    }
+                }
+            }
+
 
             std::tuple<double, double> handPosition = get_center(result);
             double x = (std::get<0>(handPosition) - low) / (high - low);
@@ -210,6 +213,18 @@ public:
 
         }
 
+        if (history_type == -1) {
+
+        } else if (history_type == 0) {
+            drawTri(img, history_weight[0], history_weight[1], history_weight[2], history_weight[3], history_weight[4], history_weight[5]);
+            putText(img, "Triangle!", Point(0, 100), 2, 1, cv::FONT_HERSHEY_COMPLEX, 2, 8, false);
+        } else if (history_type == 1) {
+            drawRec(img, history_weight[0], history_weight[1], history_weight[2], history_weight[3]);
+            putText(img, "Rectangle!", Point(0, 100), 2, 1, cv::FONT_HERSHEY_COMPLEX, 2, 8, false);
+        } else {
+            drawCir(img, history_weight[0], history_weight[1], history_weight[2]);
+            putText(img, "Circle!", Point(0, 100), 2, 1, cv::FONT_HERSHEY_COMPLEX, 2, 8, false);
+        }
         handTracker->show_window(img, result, drawingPoints, fps);
     }
 

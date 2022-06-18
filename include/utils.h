@@ -10,6 +10,8 @@
 
 int64_t get_ms();
 
+int* random_order(int size);
+
 void start_python(const char* interpreter);
 
 #define THUMB_STRAIGHT 1<<0

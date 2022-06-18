@@ -15,6 +15,16 @@ double r(){
     return (double)rand() / RAND_MAX;
 }
 
+int* random_order(int size){
+    int* order = new int[size];
+    for(int i = 0; i < size; i++) order[i] = i;
+    for(int i = size; i >= 1; i--){
+        int r = rand() % size;
+        std::swap(order[i - 1], order[r]);
+    }
+    return order;
+}
+
 void start_python(const char *interpreter) {
     std::string command;
     command.append("\"").append(interpreter).append("\" ../python/main.py");
