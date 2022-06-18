@@ -6,13 +6,14 @@ from mediapipe import solutions
 from socket import *
 import re
 
+pattern = re.compile(r"x:\s+([\d\\.\-e]*)\s+y:\s+([\d\\.\-e]*)\s+z:\s+([\d\\.\-e]*)")
+
 
 def bytes_to_image(width, height, bs):
     return np.frombuffer(bs, dtype=np.uint8).reshape((height, width, 3))
 
 
 def process_result(results):
-    pattern = re.compile(r"x:\s+([\d\\.\-e]*)\s+y:\s+([\d\\.\-e]*)\s+z:\s+([\d\\.\-e]*)")
     if results.multi_hand_landmarks is None:
         return "[]"
     res_list = []
