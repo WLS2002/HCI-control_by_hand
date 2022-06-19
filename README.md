@@ -20,7 +20,7 @@ Blue point is the center point to control your mouse.
 ### 5. Use special gesture to enter or leave DRAW MODE. In this mode, you can draw something. The application will tell it as Rectangle, Triangle or Circle!
 ![](md_assets/gif4.gif)
 ## Methods
-### Use TCP to connect between process.
+### Use TCP to connect between processes.
 For the limit of the course, I have to use C++ to complete this project.
 
 However, I can not find any available version of MediaPipe in C++. Instead, it is in python.
