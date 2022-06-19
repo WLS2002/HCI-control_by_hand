@@ -174,13 +174,13 @@ public:
                     }
                 }
 
-                if (right_click_count >= 8) { // must be clicking
+                if (right_click_count >= 11) { // must be clicking
                     if (!right_down) {
                         mouse_event(MOUSEEVENTF_RIGHTDOWN, cursor_pos->x, cursor_pos->y, 0, 0);
                         right_down = true;
                     }
                 }
-                else if (4 <= right_click_count && right_click_count <= 7) {
+                else if (4 <= right_click_count && right_click_count <= 10) {
                     // transition state, doing nothing at all
                 }
                 else {
@@ -188,6 +188,17 @@ public:
                         mouse_event(MOUSEEVENTF_RIGHTUP, cursor_pos->x, cursor_pos->y, 0, 0);
                         right_down = false;
                     }
+                }
+            }
+            else {
+                if (left_down) {
+                    mouse_event(MOUSEEVENTF_LEFTUP, cursor_pos->x, cursor_pos->y, 0, 0);
+                    left_down = false;
+                }
+
+                if (right_down) {
+                    mouse_event(MOUSEEVENTF_RIGHTUP, cursor_pos->x, cursor_pos->y, 0, 0);
+                    right_down = false;
                 }
             }
 
